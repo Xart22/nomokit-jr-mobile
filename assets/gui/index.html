@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="google" value="notranslate" />
+    <link rel="shortcut icon" href="static/favicon.ico" />
+    <title>Nomopro</title>
+
+    <script>
+      HTMLCanvasElement.prototype.getContext = (function (origFn) {
+        return function (type, attribs) {
+          attribs = attribs || {};
+          attribs.preserveDrawingBuffer = true;
+          return origFn.call(this, type, attribs);
+        };
+      })(HTMLCanvasElement.prototype.getContext);
+    </script>
+  </head>
+  <body onclick="play()">
+    <audio
+      src="./sounds/mouse-click.mp3"
+      style="display: none"
+      id="mouseAudio"
+    ></audio>
+    <script type="text/javascript" src="lib.min.js"></script>
+    <script type="text/javascript" src="chunks/gui.js"></script>
+    <script>
+      async function play() {
+        var audio = document.getElementById("mouseAudio");
+        audio.play();
+        setTimeout(function () {
+          audio.pause();
+          audio.currentTime = 0;
+        }, 300);
+      }
+      window.addEventListener("load", function () {
+        var dropDown = document.getElementsByClassName("blocklyDropDownDiv");
+        var input = document.getElementsByClassName("blocklyHtmlInput");
+        for (var i = 0; i < dropDown.length; i++) {
+          dropDown[i].addEventListener("click", () => {
+            console.log("click");
+            dropDown[i].style.position = "absolute";
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

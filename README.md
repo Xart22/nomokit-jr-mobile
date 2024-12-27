@@ -1,4 +1,4 @@
-# nomokitjr
+# nomokit
 
 A new Flutter project.
 

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "884997925496",
+    "project_id": "nomokit-jr",
+    "storage_bucket": "nomokit-jr.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884997925496:android:5bb1afb433f950861d9b8d",
+        "android_client_info": {
+          "package_name": "com.nomokitjr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBDdbWWeeFYT1uhGNLLqBjH3uxRM2UXtI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
