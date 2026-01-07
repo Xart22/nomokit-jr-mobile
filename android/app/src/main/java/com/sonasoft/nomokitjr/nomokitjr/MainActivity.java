@@ -1,4 +1,4 @@
-package com.sonasoft.nomokitjr.nomokitjr;
+package com.instareducation.nomokitjr.nomokitjr;
 
 import io.flutter.embedding.android.FlutterActivity;
 

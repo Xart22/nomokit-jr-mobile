@@ -8,9 +8,9 @@ class LoadingGui extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFF001b94),
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           SpinKitThreeInOut(
             color: Colors.white,
             size: 50.0,

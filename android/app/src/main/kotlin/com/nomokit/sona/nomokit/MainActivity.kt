@@ -1,17 +1,18 @@
-package com.sonasoft.nomokit
+package com.instareducation.nomokit
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.embedding.engine.FlutterEngine
-import android.provider.Settings
 import android.hardware.usb.*
 import android.content.Context
 import android.content.Intent
 import android.app.PendingIntent
+import android.os.Build
+import android.provider.Settings
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.sonasoft.nomokit.USB_PERMISSION"
+    private val CHANNEL = "com.instareducation.nomokit.USB_PERMISSION"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -35,7 +36,12 @@ class MainActivity : FlutterActivity() {
         if (usbManager.hasPermission(device)) {
             return true
         }
-        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(CHANNEL), 0)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE
+        } else {
+            0
+        }
+        val permissionIntent = PendingIntent.getBroadcast(this, 0, Intent(CHANNEL), flags)
         usbManager.requestPermission(device, permissionIntent)
         return false
     }

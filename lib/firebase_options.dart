@@ -63,6 +63,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '884997925496',
     projectId: 'nomokit-jr',
     storageBucket: 'nomokit-jr.appspot.com',
-    iosBundleId: 'com.sonasoft.nomokit',
+    iosBundleId: 'com.instareducation.nomokit',
   );
 }

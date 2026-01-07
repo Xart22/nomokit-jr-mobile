@@ -37,6 +37,8 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = loginResponseModelFromJson(response.body);
         await storage.write('accestoken', data.token);
+        await storage.write('user', data.user.toJson());
+        return 'success';
         if (data.user.subscriptions == null && data.user.trial == null) {
           Get.snackbar(
             'Failed',
@@ -51,8 +53,7 @@ class ApiService {
 
           return 'success';
         } else if (data.user.trial != null && data.user.trial?.isActive == 1) {
-          await storage.write('user', data.user.toJson());
-          return 'success';
+
         } else {
           Get.snackbar(
             'Failed',
@@ -136,6 +137,8 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final data = loginResponseModelFromJson(response.body);
+        await storage.write('user', data.user.toJson());
+        return true;
         if (data.user.subscriptions == null && data.user.trial == null) {
           Get.snackbar(
             'Failed',
@@ -146,12 +149,9 @@ class ApiService {
           return false;
         } else if (data.user.subscriptions != null &&
             data.user.subscriptions?.isActive == 1) {
-          await storage.write('user', data.user.toJson());
 
-          return true;
         } else if (data.user.trial != null && data.user.trial?.isActive == 1) {
-          await storage.write('user', data.user.toJson());
-          return true;
+
         } else {
           Get.snackbar(
             'Failed',

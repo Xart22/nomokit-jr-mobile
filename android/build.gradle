@@ -1,20 +1,47 @@
-buildscript {
-    ext.kotlin_version = '1.8.10'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+// Auto-inject namespace for plugins missing it and force compatible JVM targets
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('com.android.library')) {
+            project.android {
+                if (namespace == null) {
+                    // Auto-generate namespace from package in AndroidManifest or project name
+                    def manifestFile = project.file('src/main/AndroidManifest.xml')
+                    if (manifestFile.exists()) {
+                        def manifest = new XmlSlurper().parse(manifestFile)
+                        def packageName = manifest.@package.text()
+                        if (packageName) {
+                            namespace = packageName
+                        } else {
+                            namespace = "dev.flutter.plugin.${project.name.replaceAll('-', '_')}"
+                        }
+                    } else {
+                        namespace = "dev.flutter.plugin.${project.name.replaceAll('-', '_')}"
+                    }
+                }
+                
+                // Force compatible Java/Kotlin versions for all plugins
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
+            }
+        }
+        
+        // Force Kotlin JVM target for all plugins
+        if (project.hasProperty('kotlin')) {
+            project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions {
+                    jvmTarget = '17'
+                }
+            }
+        }
     }
 }
 

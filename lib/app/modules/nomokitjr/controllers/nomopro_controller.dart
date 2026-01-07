@@ -146,7 +146,7 @@ class NomoproController extends GetxController {
             onPressed: () {
               Get.back();
             },
-            child: Text("No"),
+            child: const Text("No"),
           ),
         ],
       ));
