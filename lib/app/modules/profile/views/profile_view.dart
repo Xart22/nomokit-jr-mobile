@@ -37,22 +37,8 @@ class ProfileView extends GetView<ProfileController> {
                     children: [
                       Expanded(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Obx(() => controller.userData.value.avatar.isEmpty
-                                ? Container()
-                                : Container(
-                                    margin: const EdgeInsets.all(20),
-                                    width: 100,
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      image: DecorationImage(
-                                        image: CachedNetworkImageProvider(
-                                            "https://nomo-kit.com/storage/avatar/${controller.userData.value.avatar}"),
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
-                                  )),
                             Obx(() => Text(controller.userData.value.username)),
                             const SizedBox(
                               height: 10,
