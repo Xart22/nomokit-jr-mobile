@@ -5,7 +5,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:bluetooth_classic/models/device.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:nomokitjr/app/services/blue_serial.dart';
@@ -21,10 +21,8 @@ class NomoproController extends GetxController {
   var imageBlop = [];
   TextEditingController projectNameController = TextEditingController();
   BlueSerialService bluetoothService = Get.find<BlueSerialService>();
-  BluetoothConnection? connection;
   var connectionTo = ''.obs;
-  StreamSubscription<BluetoothDiscoveryResult>? deviceStreamSubscription;
-  var devicesBt = <BluetoothDiscoveryResult>[].obs;
+  var devicesBt = <Device>[].obs;
   var isDicovering = false.obs;
 
   createFileFromBase64(
@@ -54,31 +52,40 @@ class NomoproController extends GetxController {
   showConnectionModal() async {
     await bluetoothService.init();
 
-    if (bluetoothService.bluetoothState == BluetoothState.STATE_OFF ||
-        bluetoothService.bluetoothState == BluetoothState.STATE_TURNING_OFF ||
-        bluetoothService.bluetoothState == BluetoothState.UNKNOWN) {
-      await FlutterBluetoothSerial.instance.requestEnable().then((value) {
-        if (value == true) {
-          startDiscovery();
-        } else {
-          Get.snackbar("Bluetooth", "Bluetooth is not enabled",
-              snackPosition: SnackPosition.BOTTOM);
-        }
-      });
-    } else {
-      startDiscovery();
+    if (!bluetoothService.bluetoothEnabled) {
+      Get.snackbar("Bluetooth", "Bluetooth is not enabled",
+          snackPosition: SnackPosition.BOTTOM);
+      return;
     }
+
+    startDiscovery();
   }
 
-  void startDiscovery() {
+  void startDiscovery() async {
     if (connectionTo.value == '') {
       devicesBt.clear();
       if (!isDicovering.value) {
         isDicovering.value = true;
-        deviceStreamSubscription = bluetoothService.startDiscovery((result) {
-          devicesBt.add(result!);
+        await bluetoothService.startDiscovery();
+
+        // Use a timer to update the device list periodically
+        Timer.periodic(Duration(seconds: 1), (timer) {
+          if (!isDicovering.value) {
+            timer.cancel();
+          } else {
+            devicesBt.value = List.from(bluetoothService.discoveredDevices);
+          }
+        });
+
+        // Auto-stop discovery after 10 seconds
+        Future.delayed(Duration(seconds: 10), () {
+          if (isDicovering.value) {
+            bluetoothService.stopDiscovery();
+            isDicovering.value = false;
+          }
         });
       }
+
       Get.defaultDialog(
           title: connectionTo.value == ''
               ? "Connect to Device"
@@ -92,41 +99,44 @@ class NomoproController extends GetxController {
                       return ListTile(
                         onTap: () async {
                           Get.back();
-                          if (connection != null) {
-                            connection!.close();
-                            connection = null;
+                          isDicovering.value = false;
+                          bluetoothService.stopDiscovery();
+
+                          bool connected = await bluetoothService.connect(
+                              devicesBt[index].address, onDataReceived);
+
+                          if (connected) {
+                            connectionTo.value = devicesBt[index].name ?? 'Unknown';
+                            await webViewController!.postWebMessage(
+                                message: WebMessage(data: 'CONNECTED'),
+                                targetOrigin: WebUri('*'));
+                            Get.snackbar("Bluetooth", "Connected Successfully",
+                                snackPosition: SnackPosition.BOTTOM,
+                                backgroundColor: Colors.green,
+                                colorText: Colors.white,
+                                duration: const Duration(seconds: 2));
+                          } else {
+                            Get.snackbar("Bluetooth", "Connection Failed",
+                                snackPosition: SnackPosition.BOTTOM,
+                                backgroundColor: Colors.red,
+                                colorText: Colors.white,
+                                duration: const Duration(seconds: 2));
                           }
-                          connection = await BluetoothConnection.toAddress(
-                              devicesBt[index].device.address);
-                          connectionTo.value = devicesBt[index].device.name!;
-                          connection!.input!.listen(onDataReceived);
-                          await webViewController!.postWebMessage(
-                              message: WebMessage(data: 'CONNECTED'),
-                              targetOrigin: WebUri('*'));
-                          Get.snackbar("Bluetooth", "Connected Successfully",
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.green,
-                              colorText: Colors.white,
-                              duration: const Duration(seconds: 2));
                         },
-                        title: Text(devicesBt[index].device.name ?? ''),
-                        subtitle: Text(devicesBt[index].device.address),
+                        title: Text(devicesBt[index].name ?? 'Unknown'),
+                        subtitle: Text(devicesBt[index].address),
                       );
                     }),
               )),
           cancel: TextButton(
             onPressed: () {
-              deviceStreamSubscription?.cancel();
+              bluetoothService.stopDiscovery();
               isDicovering.value = false;
               Get.back();
             },
             child: const Text("Cancel"),
           ),
           barrierDismissible: false);
-
-      deviceStreamSubscription?.onDone(() {
-        isDicovering.value = false;
-      });
     } else {
       Get.dialog(AlertDialog(
         title: const Text("Disconnect"),
@@ -135,8 +145,7 @@ class NomoproController extends GetxController {
         actions: [
           TextButton(
             onPressed: () {
-              connection!.close();
-              connection = null;
+              bluetoothService.disconnect();
               connectionTo.value = '';
               Get.back();
             },
@@ -161,8 +170,7 @@ class NomoproController extends GetxController {
 
   void writeToTransport(Uint8List data) async {
     try {
-      connection!.output.add(data);
-      await connection!.output.allSent;
+      bluetoothService.write(data);
     } catch (e) {
       print(e);
     }

@@ -25,7 +25,7 @@ subprojects {
                         namespace = "dev.flutter.plugin.${project.name.replaceAll('-', '_')}"
                     }
                 }
-                
+
                 // Force compatible Java/Kotlin versions for all plugins
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_17
@@ -33,7 +33,21 @@ subprojects {
                 }
             }
         }
-        
+
+        // Force old plugins to compile with SDK 36
+        if (project.hasProperty('android') && project.name == 'usb_serial') {
+            project.android {
+                compileSdkVersion 36
+            }
+        }
+
+        // Force newer appcompat version for old plugins
+        if (project.name == 'usb_serial') {
+            project.dependencies {
+                implementation 'androidx.appcompat:appcompat:1.6.1'
+            }
+        }
+
         // Force Kotlin JVM target for all plugins
         if (project.hasProperty('kotlin')) {
             project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
@@ -48,8 +62,6 @@ subprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(':app')
 }
 

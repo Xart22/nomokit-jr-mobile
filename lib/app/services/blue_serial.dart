@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:bluetooth_classic/bluetooth_classic.dart';
+import 'package:bluetooth_classic/models/device.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../data/message_model.dart';
 
 class BlueSerialService extends GetxService {
-  final blueSerial = FlutterBluetoothSerial.instance;
-  BluetoothState bluetoothState = BluetoothState.UNKNOWN;
-  BluetoothConnection? connection;
+  final blueSerial = BluetoothClassic();
+  bool bluetoothEnabled = false;
+  bool isConnected = false;
   final ScrollController listScrollController = ScrollController();
   var messages = <Message>[].obs;
   var messageBuffer = ''.obs;
@@ -22,77 +22,67 @@ class BlueSerialService extends GetxService {
   Timer? discoverableTimeoutTimer;
   int discoverableTimeoutSecondsLeft = 0;
 
-  StreamSubscription<BluetoothDiscoveryResult>? startDiscovery(
-      Function(BluetoothDiscoveryResult?) callback) {
-    return blueSerial.startDiscovery().listen((callback));
+  StreamSubscription? _dataSubscription;
+  StreamSubscription? _discoverySubscription;
+  List<Device> discoveredDevices = [];
+
+  Future<List<Device>> startDiscovery() async {
+    discoveredDevices.clear();
+
+    // Get paired devices first
+    List<Device> pairedDevices = await blueSerial.getPairedDevices();
+    discoveredDevices.addAll(pairedDevices);
+
+    // Listen for newly discovered devices
+    _discoverySubscription = blueSerial.onDeviceDiscovered().listen((device) {
+      if (!discoveredDevices.any((d) => d.address == device.address)) {
+        discoveredDevices.add(device);
+      }
+    });
+
+    // Start scanning
+    await blueSerial.startScan();
+
+    return discoveredDevices;
+  }
+
+  void stopDiscovery() {
+    _discoverySubscription?.cancel();
+    blueSerial.stopScan();
   }
 
   Future<bool> connect(String address, Function(Uint8List)? chatBuilder) async {
     try {
-      connection = await BluetoothConnection.toAddress(address);
+      String sppUUID = "00001101-0000-1000-8000-00805F9B34FB";
+      await blueSerial.connect(address, sppUUID);
+
       if (chatBuilder != null) {
-        connection?.input?.listen(chatBuilder);
+        _dataSubscription = blueSerial.onDeviceDataReceived().listen((data) {
+          chatBuilder(data);
+        });
       }
+
+      isConnected = true;
       return true;
     } catch (exception) {
+      isConnected = false;
       return false;
     }
   }
 
+  void write(Uint8List data) async {
+    await blueSerial.write(String.fromCharCodes(data));
+  }
+
   disconnect() async {
-    connection?.close();
-    connection = null;
+    _dataSubscription?.cancel();
+    await blueSerial.disconnect();
+    isConnected = false;
   }
 
   Future<BlueSerialService> init() async {
-    var statusBluetoothScan = await Permission.bluetoothScan.status;
-    var statusbluetoothConnect = await Permission.bluetoothConnect.status;
-    var statusbluetooth = await Permission.bluetooth.status;
-    var statusbluetoothAdvertise = await Permission.bluetoothAdvertise.status;
-    if (!statusBluetoothScan.isGranted) {
-      await Permission.bluetoothScan.request();
-    }
-    if (!statusbluetooth.isGranted) {
-      await Permission.bluetooth.request();
-    }
-    if (!statusbluetoothAdvertise.isGranted) {
-      await Permission.bluetoothAdvertise.request();
-    }
-    if (!statusbluetoothConnect.isGranted) {
-      await Permission.bluetoothConnect.request();
-    }
-
-    blueSerial.state.then((state) {
-      bluetoothState = state;
-    });
-
-    Future.doWhile(() async {
-      // Wait if adapter not enabled
-      if ((await blueSerial.isEnabled) ?? false) {
-        return false;
-      }
-      await Future.delayed(const Duration(milliseconds: 0xDD));
-      return true;
-    }).then((_) {
-      // Update the address field
-      blueSerial.address.then((add) {
-        address.value = add!;
-      });
-    });
-
-    blueSerial.name.then((nm) {
-      name.value = nm!;
-    });
-
-    // Listen for futher state changes
-    blueSerial.onStateChanged().listen((BluetoothState state) {
-      bluetoothState = state;
-
-      // Discoverable mode is disabled when Bluetooth gets disabled
-      discoverableTimeoutTimer = null;
-      discoverableTimeoutSecondsLeft = 0;
-    });
-
+    await blueSerial.initPermissions();
+    bluetoothEnabled = true;
     return this;
   }
 }
