@@ -19,10 +19,11 @@ class HomeController extends GetxController {
   final storage = GetStorage();
   late UsbSerialService usbService;
   late BlueSerialService bluetoothService;
-  final Uri urlSonatronic = Uri.parse('https://tokopedia.link/yPY3uuba4zb');
-  final Uri urlRoboClubShopee =
-      Uri.parse('https://shopee.co.id/roboclub_store');
-  final Uri urlRoboClub = Uri.parse('https://tokopedia.link/RFOavkWnaAb');
+  final Uri urlSonatronic = Uri.parse('https://tk.tokopedia.com/ZS4jqd4YG/');
+  final Uri urlInstarEducationShopee =
+      Uri.parse('https://shopee.co.id/instareducation_store');
+  final Uri urlInstarEducation =
+      Uri.parse('https://tokopedia.link/SqVKIHHcCGb');
   var title = 'Nomokit'.obs;
   var file = [].obs;
   var userData = User(
@@ -70,14 +71,14 @@ class HomeController extends GetxController {
                 width: 100,
                 height: 100,
               ),
-              title: const Center(child: Text('Robooclub Store')),
+              title: const Center(child: Text('InstarEducation Store')),
               trailing: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                 ),
                 onPressed: () {
                   Get.back();
-                  openShop(urlRoboClub);
+                  openShop(urlInstarEducation);
                 },
                 child: const Text('Open', style: TextStyle(color: Colors.blue)),
               ),
@@ -109,14 +110,14 @@ class HomeController extends GetxController {
                 width: 100,
                 height: 100,
               ),
-              title: const Center(child: Text('Roboclub_Store')),
+              title: const Center(child: Text('InstarEducation_Store')),
               trailing: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                 ),
                 onPressed: () {
                   Get.back();
-                  openShop(urlRoboClubShopee);
+                  openShop(urlInstarEducationShopee);
                 },
                 child: const Text('Open', style: TextStyle(color: Colors.blue)),
               ),
