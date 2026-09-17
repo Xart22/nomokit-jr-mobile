@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bluetooth_classic/bluetooth_classic.dart';
 import 'package:bluetooth_classic/models/device.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,8 @@ import 'package:get/get.dart';
 import '../data/message_model.dart';
 
 class BlueSerialService extends GetxService {
+  static const _channel =
+      MethodChannel('com.instareducation.nomokit.BLUETOOTH_STATE');
   final blueSerial = BluetoothClassic();
   bool bluetoothEnabled = false;
   bool isConnected = false;
@@ -70,8 +73,8 @@ class BlueSerialService extends GetxService {
     }
   }
 
-  void write(Uint8List data) async {
-    await blueSerial.write(String.fromCharCodes(data));
+  Future<bool> write(Uint8List data) {
+    return blueSerial.writeBytes(data);
   }
 
   disconnect() async {
@@ -81,8 +84,12 @@ class BlueSerialService extends GetxService {
   }
 
   Future<BlueSerialService> init() async {
+    bluetoothEnabled =
+        await _channel.invokeMethod<bool>('isBluetoothEnabled') ?? false;
+    if (!bluetoothEnabled) {
+      return this;
+    }
     await blueSerial.initPermissions();
-    bluetoothEnabled = true;
     return this;
   }
 }

@@ -1,3 +1,6 @@
+import 'dart:collection';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -19,6 +22,13 @@ class NomoproView extends GetView<NomoproController> {
             InAppWebView(
               initialUrlRequest:
                   URLRequest(url: WebUri("http://localhost:8080/")),
+              initialUserScripts: UnmodifiableListView([
+                UserScript(
+                  source:
+                      "window.__nomoBridgeEager = true; console.log('NOMO_EAGER');",
+                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
+                ),
+              ]),
               onConsoleMessage: (ctr, consoleMessage) {
                 if (consoleMessage.message.contains("makeyMakey")) {
                   controller.isLoading.value = false;
@@ -31,6 +41,35 @@ class NomoproView extends GetView<NomoproController> {
               },
               onWebViewCreated: (ctr) async {
                 controller.webViewController = ctr;
+                debugPrint('[NOMO] onWebViewCreated');
+
+                ctr.addJavaScriptHandler(
+                  handlerName: "nomoLinkSend",
+                  callback: (data) async {
+                    debugPrint('[NOMO] send handler data=$data');
+                    if (data.isNotEmpty) {
+                      await controller.bleLinkService.handleSend(
+                        data[0]['socketId'].toString(),
+                        data[0]['type'].toString(),
+                        data[0]['msg'].toString(),
+                        ctr,
+                      );
+                    }
+                  },
+                );
+
+                ctr.addJavaScriptHandler(
+                  handlerName: "nomoLinkClose",
+                  callback: (data) async {
+                    if (data.isNotEmpty) {
+                      await controller.bleLinkService.handleClose(
+                        '${data[0]['socketId']}',
+                        '${data[0]['type']}',
+                        ctr,
+                      );
+                    }
+                  },
+                );
 
                 ctr.addJavaScriptHandler(
                   handlerName: "openConnectionModal",
@@ -94,6 +133,17 @@ class NomoproView extends GetView<NomoproController> {
                 allowContentAccess: true,
                 allowFileAccessFromFileURLs: true,
               ),
+              onLoadStop: (ctr, url) async {
+                debugPrint('[NOMO] onLoadStop $url');
+                try {
+                  var bridge = await rootBundle
+                      .loadString("assets/gui/nomo-link-bridge.js");
+                  await ctr.evaluateJavascript(source: bridge);
+                  debugPrint('[NOMO] bridge injected');
+                } catch (e) {
+                  debugPrint('[NOMO] bridge inject error: $e');
+                }
+              },
             ),
             Obx(() =>
                 controller.isLoading.value ? const LoadingGui() : Container()),

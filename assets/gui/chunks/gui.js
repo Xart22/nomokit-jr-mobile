@@ -13,11 +13,11 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "html,\nbody,\n.index_app_3Qs6X {\n    /* probably unecessary, transitional until layout is refactored */\n    width: 100%; \n    height: 100%;\n    margin: 0;\n\n    /* Setting min height/width makes the UI scroll below those sizes */\n    min-width: 1024px;\n    min-height: 640px; /* Min height to fit sprite/backdrop button */\n}\n\n/* @todo: move globally? Safe / side FX, for blocks particularly? */\n\n* { -webkit-box-sizing: border-box; box-sizing: border-box; }\n", ""]);
+exports.push([module.i, "html,\nbody,\n.index_app_2mqDO {\n    /* probably unecessary, transitional until layout is refactored */\n    width: 100%;\n    height: 100%;\n    margin: 0;\n\n    /* Setting min height/width makes the UI scroll below those sizes */\n    min-width: 1024px;\n    min-height: 640px; /* Min height to fit sprite/backdrop button */\n}\n\n/* @todo: move globally? Safe / side FX, for blocks particularly? */\n\n* {\n    -webkit-box-sizing: border-box;\n            box-sizing: border-box;\n}\n", ""]);
 
 // exports
 exports.locals = {
-	"app": "index_app_3Qs6X"
+	"app": "index_app_2mqDO"
 };
 
 /***/ }),
@@ -128,7 +128,7 @@ if (Object(_lib_supported_browser__WEBPACK_IMPORTED_MODULE_9__["default"])()) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* WEBPACK VAR INJECTION */(function(Buffer) {/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
@@ -152,7 +152,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
 var onClickLogo = function onClickLogo() {
-  window.location = "https://nomo-kit.com/";
+  // window.location = "https://nomokit.robo-club.com";
+  window.flutter_inappwebview.callHandler("backToHome");
 };
 
 var onClickCheckUpdate = function onClickCheckUpdate() {
@@ -258,34 +259,48 @@ var handleShowMessageBox = function handleShowMessageBox(type, message) {
     }
   }
 
-  if (false) {}
+  window.addEventListener("flutterInAppWebViewPlatformReady", function (event) {
+    window.flutter_inappwebview.callHandler("loadProject").then(function (result) {
+      // result is base64 encoded string we need to convert to array buffer
+      var onVmInit = function onVmInit(vm) {
+        var arrayBuffer = Uint8Array.from(Buffer.from(result, "base64"), function (c) {
+          return c;
+        }).buffer;
+        vm.loadProject(arrayBuffer);
+      };
 
-  react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( // important: this is checking whether `simulateScratchDesktop` is truthy, not just defined!
-  simulateScratchDesktop ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
-    canEditTitle: true,
-    isScratchDesktop: true,
-    onClickAbout: onClickAbout,
-    showTelemetryModal: true,
-    canSave: false,
-    onTelemetryModalCancel: handleTelemetryModalCancel,
-    onTelemetryModalOptIn: handleTelemetryModalOptIn,
-    onTelemetryModalOptOut: handleTelemetryModalOptOut,
-    onAbortUpdate: onAbortUpdate,
-    onClickCheckUpdate: onClickCheckUpdate,
-    onClickUpdate: onClickUpdate,
-    onClickClearCache: onClickClearCache,
-    onClickInstallDriver: onClickInstallDriver,
-    onShowMessageBox: handleShowMessageBox
-  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
-    canEditTitle: true,
-    backpackVisible: true,
-    showComingSoon: true,
-    backpackHost: backpackHost,
-    canSave: false,
-    onClickLogo: onClickLogo,
-    onShowMessageBox: handleShowMessageBox
-  }), appTarget);
+      if (false) {}
+
+      react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.render( // important: this is checking whether `simulateScratchDesktop` is truthy, not just defined!
+      simulateScratchDesktop ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
+        canEditTitle: true,
+        isScratchDesktop: true,
+        onClickAbout: onClickAbout,
+        showTelemetryModal: true,
+        canSave: false,
+        onTelemetryModalCancel: handleTelemetryModalCancel,
+        onTelemetryModalOptIn: handleTelemetryModalOptIn,
+        onTelemetryModalOptOut: handleTelemetryModalOptOut,
+        onAbortUpdate: onAbortUpdate,
+        onClickCheckUpdate: onClickCheckUpdate,
+        onClickUpdate: onClickUpdate,
+        onClickClearCache: onClickClearCache,
+        onClickInstallDriver: onClickInstallDriver,
+        onShowMessageBox: handleShowMessageBox
+      }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(WrappedGui, {
+        canEditTitle: true,
+        backpackVisible: true,
+        showComingSoon: true,
+        backpackHost: backpackHost,
+        canSave: false,
+        onClickLogo: onClickLogo,
+        onShowMessageBox: handleShowMessageBox,
+        onVmInit: onVmInit
+      }), appTarget);
+    });
+  });
 });
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/buffer/index.js */ "./node_modules/buffer/index.js").Buffer))
 
 /***/ }),
 

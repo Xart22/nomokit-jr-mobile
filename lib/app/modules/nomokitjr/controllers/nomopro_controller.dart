@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:bluetooth_classic/models/device.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
+import 'package:nomokitjr/app/services/ble_link.dart';
 import 'package:nomokitjr/app/services/blue_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,6 +22,7 @@ class NomoproController extends GetxController {
   var imageBlop = [];
   TextEditingController projectNameController = TextEditingController();
   BlueSerialService bluetoothService = Get.find<BlueSerialService>();
+  BleLinkService bleLinkService = Get.find<BleLinkService>();
   var connectionTo = ''.obs;
   var devicesBt = <Device>[].obs;
   var isDicovering = false.obs;

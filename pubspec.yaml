@@ -3,7 +3,7 @@ version: 1.0.2+6
 publish_to: none
 description: A new Flutter project.
 environment:
-  sdk: ">=2.19.6 <3.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   cupertino_icons: ^1.0.2
@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   bluetooth_classic: ^0.0.4
+  flutter_blue_plus: ^1.35.0
   permission_handler: ^11.3.1
   usb_serial:
     git:
@@ -61,6 +62,7 @@ flutter:
     - assets/img/
     - assets/icon/
     - assets/gui/
+    - assets/gui/nomo-link-bridge.js
     - assets/gui/sounds/
     - assets/gui/chunks/
     - assets/gui/static/assets/

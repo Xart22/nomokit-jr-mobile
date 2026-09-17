@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../services/ble_link.dart';
 import '../../../services/blue_serial.dart';
 import '../../../services/usb_serial.dart';
 import '../controllers/home_controller.dart';
@@ -12,5 +13,6 @@ class HomeBinding extends Bindings {
     );
     Get.lazyPut(() => UsbSerialService());
     Get.lazyPut(() => BlueSerialService());
+    Get.lazyPut(() => BleLinkService());
   }
 }

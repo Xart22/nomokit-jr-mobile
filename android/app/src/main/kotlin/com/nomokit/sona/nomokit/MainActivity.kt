@@ -6,6 +6,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.embedding.engine.FlutterEngine
 import android.hardware.usb.*
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
 import android.app.PendingIntent
@@ -13,6 +14,7 @@ import android.os.Build
 import android.provider.Settings
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.instareducation.nomokit.USB_PERMISSION"
+    private val BLUETOOTH_CHANNEL = "com.instareducation.nomokit.BLUETOOTH_STATE"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -20,6 +22,14 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 if (call.method == "askUsbPermission") {
                     result.success(askUsbPermission())
+                } else {
+                    result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BLUETOOTH_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                if (call.method == "isBluetoothEnabled") {
+                    result.success(BluetoothAdapter.getDefaultAdapter()?.isEnabled ?: false)
                 } else {
                     result.notImplemented()
                 }
